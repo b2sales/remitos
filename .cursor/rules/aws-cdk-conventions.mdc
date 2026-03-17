@@ -1,0 +1,39 @@
+---
+description: AWS CDK infrastructure conventions for stack definitions
+globs: infrastructure/**/*.ts
+alwaysApply: false
+---
+
+# AWS CDK Conventions
+
+## Stack Structure
+- One concern per stack (storage, api, processing, auth, frontend)
+- Export resources that other stacks consume as public readonly properties
+- Use `cdk.CfnOutput` for values needed at runtime (table names, bucket names, API URLs)
+
+## Naming
+- Stack class: `PascalCaseStack` (e.g., `StorageStack`, `ProcessingStack`)
+- Construct IDs: PascalCase descriptive (e.g., `RemitosTable`, `ImagesBucket`)
+- Physical names: let CDK auto-generate via `PhysicalName.GENERATE_IF_NEEDED`
+
+## DynamoDB
+- Always use `BillingMode.PAY_PER_REQUEST` (on-demand)
+- Always enable `pointInTimeRecoverySpecification`
+- Use `RemovalPolicy.RETAIN` for data tables
+- Define GSIs based on documented access patterns
+
+## S3
+- Always `BlockPublicAccess.BLOCK_ALL`
+- Use presigned URLs for access, never public buckets
+- Add lifecycle rules for cost optimization
+
+## Lambda
+- Runtime: `Runtime.NODEJS_20_X`
+- Bundle with esbuild via `NodejsFunction`
+- Set environment variables for table names and bucket names from stack outputs
+- Set reasonable `timeout` and `memorySize`
+
+## Deploy
+- All commands use `--profile b2sales`
+- Region: `us-east-1`
+- Account: resolved from profile

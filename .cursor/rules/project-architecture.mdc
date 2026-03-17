@@ -1,0 +1,43 @@
+---
+description: Remitos project architecture and service patterns
+globs: backend/src/**/*.ts
+alwaysApply: false
+---
+
+# Project Architecture
+
+## Monorepo Layout
+- `infrastructure/` — AWS CDK stacks (IaC)
+- `backend/src/functions/` — Lambda handlers (thin)
+- `backend/src/services/` — Business logic and external integrations
+- `backend/src/models/` — TypeScript types, Zod schemas, DTOs
+- `backend/src/shared/` — Utilities, middleware, response helpers
+- `frontend/` — React SPA
+
+## Service Pattern (Adapter)
+External integrations use an interface + implementation pattern:
+
+```typescript
+// services/acmasoft.ts — interface
+export interface IAcmasoftService {
+  buscarClientes(query: string): Promise<AcmasoftCliente[]>;
+}
+
+// services/acmasoft-mock.ts — mock implementation
+export class AcmasoftMockService implements IAcmasoftService { ... }
+
+// When real API exists, add:
+// services/acmasoft-real.ts — real implementation
+```
+
+Instantiate via factory or env var toggle, never import implementation directly in handlers.
+
+## DynamoDB Access
+- Use `@aws-sdk/lib-dynamodb` (DocumentClient) for all DynamoDB operations
+- Create one shared DynamoDB client in `shared/dynamo.ts`
+- Table names come from environment variables
+
+## Processing Pipeline
+Remito flow: S3 Upload → Textract OCR (async) → Bedrock IA (Claude 3.5 Haiku) → Manual validation → Acmasoft
+States: `procesando_ocr` → `pendiente_ia` → `pendiente_validacion` → `validado` → `enviado_acmasoft`
+Errors: `error_ocr`, `error_ia`, `error_acmasoft`

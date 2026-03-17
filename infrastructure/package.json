@@ -1,0 +1,23 @@
+{
+  "name": "infrastructure",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "cdk": "cdk",
+    "synth": "cdk synth --profile b2sales",
+    "deploy": "cdk deploy --all --profile b2sales",
+    "deploy:storage": "cdk deploy RemitosStorageStack --profile b2sales",
+    "diff": "cdk diff --all --profile b2sales",
+    "destroy": "cdk destroy --all --profile b2sales"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "constructs": "^10.4.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.170.0",
+    "esbuild": "^0.27.4",
+    "typescript": "~5.4.0"
+  }
+}

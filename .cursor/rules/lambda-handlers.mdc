@@ -1,0 +1,38 @@
+---
+description: Lambda function handler patterns and error handling
+globs: backend/src/functions/**/*.ts
+alwaysApply: false
+---
+
+# Lambda Handler Conventions
+
+## Handler Structure
+
+```typescript
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    // 1. Parse and validate input (use Zod)
+    // 2. Execute business logic via service layer
+    // 3. Return formatted response
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    // Structured error logging, then return error response
+  }
+};
+```
+
+## Rules
+- Handlers are thin: parse input, call service, format output
+- Business logic lives in `backend/src/services/`, never in handlers
+- Validate all input with Zod schemas at handler entry
+- Always return proper CORS headers via a shared `response` utility
+- Log structured JSON (no console.log of raw objects)
+- Use environment variables for resource names (`TABLE_NAME`, `BUCKET_NAME`), never hardcode
+
+## Error Handling
+- Catch all errors at handler level
+- Map known errors to appropriate HTTP status codes
+- Return `500` with generic message for unexpected errors
+- Always log the full error before returning
